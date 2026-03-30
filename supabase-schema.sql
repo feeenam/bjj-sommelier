@@ -32,7 +32,8 @@ create policy "Allow public read access"
 insert into videos (title, description, youtube_id, source_url, event, year, competitors, weight_class, match_type, ruleset, result, owner_rating, owner_review, thumbnail_url, duration, date_added) values
 ('Gordon Ryan vs Andre Galvao', 'The long-awaited ADCC superfight. Gordon Ryan attempts to cement his legacy against the ADCC legend Andre Galvao.', 'dQw4w9WgXcQ', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'ADCC', 2022, 'Gordon Ryan vs Andre Galvao', 'Superfight', 'Superfight', 'No-Gi', 'Submission (Rear Naked Choke)', 4.9, 'A flawless performance by Gordon. The way he systematically dismantled a legend like Galvao was shocking to witness live. The back take sequence is a thing of beauty. Historical significance is off the charts.', 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800', '16:40', '2024-02-18');
 
--- Allow inserts from the app
-create policy "Allow public insert"
+-- Only authenticated users can insert
+create policy "Allow authenticated insert"
   on videos for insert
+  to authenticated
   with check (true);
