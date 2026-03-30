@@ -12,7 +12,7 @@ create table videos (
   match_type text not null check (match_type in ('Superfight', 'Final', 'Semi-Final', 'Quarter-Final', 'Round of 16', 'Absolute Final')),
   ruleset text not null check (ruleset in ('Gi', 'No-Gi')),
   result text not null,
-  owner_rating numeric(2,1) not null check (owner_rating >= 1 and owner_rating <= 5),
+  owner_rating numeric(3,1) not null check (owner_rating >= 1 and owner_rating <= 10),
   owner_review text not null,
   thumbnail_url text not null,
   duration text not null,
@@ -30,7 +30,7 @@ create policy "Allow public read access"
 
 -- Seed with one sample entry
 insert into videos (title, description, youtube_id, source_url, event, year, competitors, weight_class, match_type, ruleset, result, owner_rating, owner_review, thumbnail_url, duration, date_added) values
-('Gordon Ryan vs Andre Galvao', 'The long-awaited ADCC superfight. Gordon Ryan attempts to cement his legacy against the ADCC legend Andre Galvao.', 'dQw4w9WgXcQ', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'ADCC', 2022, 'Gordon Ryan vs Andre Galvao', 'Superfight', 'Superfight', 'No-Gi', 'Submission (Rear Naked Choke)', 4.9, 'A flawless performance by Gordon. The way he systematically dismantled a legend like Galvao was shocking to witness live. The back take sequence is a thing of beauty. Historical significance is off the charts.', 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800', '16:40', '2024-02-18');
+('Gordon Ryan vs Andre Galvao', 'The long-awaited ADCC superfight. Gordon Ryan attempts to cement his legacy against the ADCC legend Andre Galvao.', 'dQw4w9WgXcQ', 'https://www.youtube.com/watch?v=dQw4w9WgXcQ', 'ADCC', 2022, 'Gordon Ryan vs Andre Galvao', 'Superfight', 'Superfight', 'No-Gi', 'Submission (Rear Naked Choke)', 9.8, 'A flawless performance by Gordon. The way he systematically dismantled a legend like Galvao was shocking to witness live. The back take sequence is a thing of beauty. Historical significance is off the charts.', 'https://images.unsplash.com/photo-1544367567-0f2fcb009e0b?auto=format&fit=crop&q=80&w=800', '16:40', '2024-02-18');
 
 -- Only authenticated users can insert
 create policy "Allow authenticated insert"

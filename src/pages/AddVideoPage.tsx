@@ -26,7 +26,7 @@ export function AddVideoPage() {
     match_type: 'Final' as MatchType,
     ruleset: 'No-Gi' as Ruleset,
     result: '',
-    owner_rating: 4.0,
+    owner_rating: 7.0,
     owner_review: '',
     thumbnail_url: '',
     duration: '',
@@ -286,7 +286,7 @@ export function AddVideoPage() {
               <input
                 type="range"
                 min={1}
-                max={5}
+                max={10}
                 step={0.1}
                 className="w-full accent-bjj-accent"
                 value={form.owner_rating}
@@ -294,7 +294,7 @@ export function AddVideoPage() {
               />
               <div className="flex justify-between text-xs text-bjj-textMuted mt-1">
                 <span>1.0</span>
-                <span>5.0</span>
+                <span>10.0</span>
               </div>
             </div>
 
