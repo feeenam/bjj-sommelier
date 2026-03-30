@@ -16,8 +16,8 @@ export function Footer() {
               </span>
             </Link>
             <p className="text-bjj-textMuted text-sm text-center md:text-left max-w-xs">
-              Curated Brazilian Jiu-Jitsu instructionals, reviewed and rated to
-              help you level up your game.
+              Curated Brazilian Jiu-Jitsu competition matches, reviewed and rated
+              like fine wine.
             </p>
           </div>
 
