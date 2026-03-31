@@ -7,6 +7,7 @@ import { CatalogPage } from './pages/CatalogPage'
 import { VideoDetailPage } from './pages/VideoDetailPage'
 import { AddVideoPage } from './pages/AddVideoPage'
 import { EditVideoPage } from './pages/EditVideoPage'
+import { InvitePage } from './pages/InvitePage'
 import { LoginPage } from './pages/LoginPage'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 
@@ -31,6 +32,7 @@ export function App() {
               <Route path="/login" element={<LoginPage />} />
               <Route path="/add" element={<ProtectedRoute><AddVideoPage /></ProtectedRoute>} />
               <Route path="/videos/:id/edit" element={<ProtectedRoute><EditVideoPage /></ProtectedRoute>} />
+              <Route path="/invite" element={<ProtectedRoute><InvitePage /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />
