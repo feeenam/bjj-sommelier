@@ -12,9 +12,11 @@ import {
   Swords,
   ExternalLink,
   Film,
+  Pencil,
 } from 'lucide-react'
 import { motion } from 'framer-motion'
 import { useVideo, useVideos } from '../data/videos'
+import { useAuth } from '../lib/AuthContext'
 import { RatingBadge } from '../components/RatingBadge'
 import { VideoCard } from '../components/VideoCard'
 const rulesetColors = {
@@ -26,6 +28,7 @@ export function VideoDetailPage() {
     id: string
   }>()
   const navigate = useNavigate()
+  const { user } = useAuth()
   const { video, loading } = useVideo(id)
   const { videos } = useVideos()
 
@@ -72,7 +75,7 @@ export function VideoDetailPage() {
     <div className="min-h-screen bg-bjj-bg pb-20">
       {/* Top Navigation Bar */}
       <div className="border-b border-bjj-border bg-bjj-surface/50 backdrop-blur-sm sticky top-16 z-40">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex justify-between items-center">
           <Link
             to="/videos"
             className="inline-flex items-center gap-2 text-sm font-medium text-bjj-textMuted hover:text-white transition-colors"
@@ -80,6 +83,15 @@ export function VideoDetailPage() {
             <ArrowLeft className="w-4 h-4" />
             Back to Archive
           </Link>
+          {user && (
+            <Link
+              to={`/videos/${video.id}/edit`}
+              className="inline-flex items-center gap-2 text-sm font-medium bg-bjj-accent/10 border border-bjj-accent/30 text-bjj-accent px-4 py-2 rounded-lg hover:bg-bjj-accent/20 transition-colors"
+            >
+              <Pencil className="w-4 h-4" />
+              Edit Match
+            </Link>
+          )}
         </div>
       </div>
 

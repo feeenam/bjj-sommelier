@@ -6,6 +6,7 @@ import { HomePage } from './pages/HomePage'
 import { CatalogPage } from './pages/CatalogPage'
 import { VideoDetailPage } from './pages/VideoDetailPage'
 import { AddVideoPage } from './pages/AddVideoPage'
+import { EditVideoPage } from './pages/EditVideoPage'
 import { LoginPage } from './pages/LoginPage'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 
@@ -29,6 +30,7 @@ export function App() {
               <Route path="/videos/:id" element={<VideoDetailPage />} />
               <Route path="/login" element={<LoginPage />} />
               <Route path="/add" element={<ProtectedRoute><AddVideoPage /></ProtectedRoute>} />
+              <Route path="/videos/:id/edit" element={<ProtectedRoute><EditVideoPage /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />
