@@ -50,6 +50,12 @@ const defaultData: VideoFormData = {
 
 export function VideoForm({ initialData, onSubmit, mode }: VideoFormProps) {
   const [form, setForm] = useState<VideoFormData>(initialData || defaultData)
+  const [customEvent, setCustomEvent] = useState(
+    initialData ? !eventSuggestions.includes(initialData.event) : false
+  )
+  const [customMatchType, setCustomMatchType] = useState(
+    initialData ? !matchTypeSuggestions.includes(initialData.match_type) : false
+  )
   const [submitting, setSubmitting] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const [success, setSuccess] = useState(false)
@@ -129,20 +135,43 @@ export function VideoForm({ initialData, onSubmit, mode }: VideoFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Event</label>
-              <input
-                type="text"
-                required
-                list="event-suggestions"
-                placeholder="e.g. ADCC, Worlds, or custom"
-                className={inputClass}
-                value={form.event}
-                onChange={(e) => updateField('event', e.target.value)}
-              />
-              <datalist id="event-suggestions">
-                {eventSuggestions.map((ev) => (
-                  <option key={ev} value={ev} />
-                ))}
-              </datalist>
+              {customEvent ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom event"
+                    className={inputClass}
+                    value={form.event}
+                    onChange={(e) => updateField('event', e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setCustomEvent(false); updateField('event', eventSuggestions[0]) }}
+                    className="shrink-0 px-3 text-sm text-bjj-textMuted hover:text-white border border-bjj-border rounded-lg transition-colors"
+                  >
+                    Back
+                  </button>
+                </div>
+              ) : (
+                <select
+                  className={selectClass}
+                  value={form.event}
+                  onChange={(e) => {
+                    if (e.target.value === '__custom__') {
+                      setCustomEvent(true)
+                      updateField('event', '')
+                    } else {
+                      updateField('event', e.target.value)
+                    }
+                  }}
+                >
+                  {eventSuggestions.map((ev) => (
+                    <option key={ev} value={ev}>{ev}</option>
+                  ))}
+                  <option value="__custom__">Custom...</option>
+                </select>
+              )}
             </div>
             <div>
               <label className={labelClass}>Year</label>
@@ -172,20 +201,43 @@ export function VideoForm({ initialData, onSubmit, mode }: VideoFormProps) {
             </div>
             <div>
               <label className={labelClass}>Match Type</label>
-              <input
-                type="text"
-                required
-                list="match-type-suggestions"
-                placeholder="e.g. Final, or custom"
-                className={inputClass}
-                value={form.match_type}
-                onChange={(e) => updateField('match_type', e.target.value)}
-              />
-              <datalist id="match-type-suggestions">
-                {matchTypeSuggestions.map((mt) => (
-                  <option key={mt} value={mt} />
-                ))}
-              </datalist>
+              {customMatchType ? (
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    required
+                    placeholder="Enter custom match type"
+                    className={inputClass}
+                    value={form.match_type}
+                    onChange={(e) => updateField('match_type', e.target.value)}
+                  />
+                  <button
+                    type="button"
+                    onClick={() => { setCustomMatchType(false); updateField('match_type', matchTypeSuggestions[0]) }}
+                    className="shrink-0 px-3 text-sm text-bjj-textMuted hover:text-white border border-bjj-border rounded-lg transition-colors"
+                  >
+                    Back
+                  </button>
+                </div>
+              ) : (
+                <select
+                  className={selectClass}
+                  value={form.match_type}
+                  onChange={(e) => {
+                    if (e.target.value === '__custom__') {
+                      setCustomMatchType(true)
+                      updateField('match_type', '')
+                    } else {
+                      updateField('match_type', e.target.value)
+                    }
+                  }}
+                >
+                  {matchTypeSuggestions.map((mt) => (
+                    <option key={mt} value={mt}>{mt}</option>
+                  ))}
+                  <option value="__custom__">Custom...</option>
+                </select>
+              )}
             </div>
             <div>
               <label className={labelClass}>Ruleset</label>
