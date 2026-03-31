@@ -1,7 +1,8 @@
 import React from 'react'
 import { Search, SlidersHorizontal } from 'lucide-react'
-import { Event, Ruleset } from '../data/videos'
+import { Event, Ruleset, Video } from '../data/videos'
 interface FilterBarProps {
+  videos: Video[]
   searchQuery: string
   setSearchQuery: (q: string) => void
   selectedEvent: Event | 'All'
@@ -11,17 +12,9 @@ interface FilterBarProps {
   sortBy: 'newest' | 'rating'
   setSortBy: (s: 'newest' | 'rating') => void
 }
-const events: (Event | 'All')[] = [
-  'All',
-  'ADCC',
-  'Worlds',
-  'Pans',
-  'Euros',
-  'WNO',
-  'CJI',
-]
 const rulesets: (Ruleset | 'All')[] = ['All', 'Gi', 'No-Gi']
 export function FilterBar({
+  videos,
   searchQuery,
   setSearchQuery,
   selectedEvent,
@@ -31,6 +24,8 @@ export function FilterBar({
   sortBy,
   setSortBy,
 }: FilterBarProps) {
+  const uniqueEvents = ['All', ...Array.from(new Set(videos.map((v) => v.event))).sort()]
+
   return (
     <div className="bg-bjj-surface border border-bjj-border rounded-xl p-4 space-y-4">
       <div className="flex flex-col md:flex-row gap-4">
@@ -65,10 +60,10 @@ export function FilterBar({
       <div className="flex flex-col lg:flex-row gap-4 lg:items-center justify-between pt-4 border-t border-bjj-border">
         {/* Events */}
         <div className="flex flex-wrap gap-2">
-          {events.map((evt) => (
+          {uniqueEvents.map((evt) => (
             <button
               key={evt}
-              onClick={() => setSelectedEvent(evt)}
+              onClick={() => setSelectedEvent(evt as Event | 'All')}
               className={`px-3 py-1.5 rounded-full text-sm font-medium transition-all ${selectedEvent === evt ? 'bg-bjj-accent text-bjj-bg' : 'bg-bjj-bg border border-bjj-border text-bjj-textMuted hover:border-bjj-accent/50 hover:text-white'}`}
             >
               {evt}

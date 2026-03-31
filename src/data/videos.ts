@@ -1,15 +1,9 @@
 import { useEffect, useState } from 'react'
 import { supabase } from '../lib/supabase'
 
-export type Event = 'ADCC' | 'Worlds' | 'Pans' | 'Euros' | 'WNO' | 'CJI'
+export type Event = string
 export type Ruleset = 'Gi' | 'No-Gi'
-export type MatchType =
-  | 'Superfight'
-  | 'Final'
-  | 'Semi-Final'
-  | 'Quarter-Final'
-  | 'Round of 16'
-  | 'Absolute Final'
+export type MatchType = string
 
 export interface Video {
   id: string

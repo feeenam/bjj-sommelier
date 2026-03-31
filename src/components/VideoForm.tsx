@@ -2,8 +2,8 @@ import React, { useState } from 'react'
 import { Upload, Save, Check, AlertCircle } from 'lucide-react'
 import { Event, MatchType, Ruleset } from '../data/videos'
 
-const events: Event[] = ['ADCC', 'Worlds', 'Pans', 'Euros', 'WNO', 'CJI']
-const matchTypes: MatchType[] = ['Superfight', 'Final', 'Semi-Final', 'Quarter-Final', 'Round of 16', 'Absolute Final']
+const eventSuggestions = ['ADCC', 'Worlds', 'Pans', 'Euros', 'WNO', 'CJI']
+const matchTypeSuggestions = ['Superfight', 'Final', 'Semi-Final', 'Quarter-Final', 'Round of 16', 'Absolute Final']
 const rulesets: Ruleset[] = ['Gi', 'No-Gi']
 
 export interface VideoFormData {
@@ -129,15 +129,20 @@ export function VideoForm({ initialData, onSubmit, mode }: VideoFormProps) {
           <div className="grid grid-cols-2 gap-4">
             <div>
               <label className={labelClass}>Event</label>
-              <select
-                className={selectClass}
+              <input
+                type="text"
+                required
+                list="event-suggestions"
+                placeholder="e.g. ADCC, Worlds, or custom"
+                className={inputClass}
                 value={form.event}
                 onChange={(e) => updateField('event', e.target.value)}
-              >
-                {events.map((ev) => (
-                  <option key={ev} value={ev}>{ev}</option>
+              />
+              <datalist id="event-suggestions">
+                {eventSuggestions.map((ev) => (
+                  <option key={ev} value={ev} />
                 ))}
-              </select>
+              </datalist>
             </div>
             <div>
               <label className={labelClass}>Year</label>
@@ -167,15 +172,20 @@ export function VideoForm({ initialData, onSubmit, mode }: VideoFormProps) {
             </div>
             <div>
               <label className={labelClass}>Match Type</label>
-              <select
-                className={selectClass}
+              <input
+                type="text"
+                required
+                list="match-type-suggestions"
+                placeholder="e.g. Final, or custom"
+                className={inputClass}
                 value={form.match_type}
                 onChange={(e) => updateField('match_type', e.target.value)}
-              >
-                {matchTypes.map((mt) => (
-                  <option key={mt} value={mt}>{mt}</option>
+              />
+              <datalist id="match-type-suggestions">
+                {matchTypeSuggestions.map((mt) => (
+                  <option key={mt} value={mt} />
                 ))}
-              </select>
+              </datalist>
             </div>
             <div>
               <label className={labelClass}>Ruleset</label>

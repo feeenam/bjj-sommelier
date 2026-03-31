@@ -69,6 +69,7 @@ export function CatalogPage() {
         </div>
 
         <FilterBar
+          videos={videos}
           searchQuery={searchQuery}
           setSearchQuery={setSearchQuery}
           selectedEvent={selectedEvent}
