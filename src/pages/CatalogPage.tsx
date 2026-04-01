@@ -96,6 +96,10 @@ export function CatalogPage() {
           <p className="text-bjj-textMuted">
             Showing{' '}
             <span className="text-white font-medium">
+              {(page - 1) * PER_PAGE + 1}–{Math.min(page * PER_PAGE, filteredAndSortedVideos.length)}
+            </span>{' '}
+            of{' '}
+            <span className="text-white font-medium">
               {filteredAndSortedVideos.length}
             </span>{' '}
             matches
