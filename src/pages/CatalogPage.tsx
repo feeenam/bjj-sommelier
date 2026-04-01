@@ -1,9 +1,12 @@
 import React, { useEffect, useMemo, useState } from 'react'
 import { useSearchParams } from 'react-router-dom'
 import { motion } from 'framer-motion'
+import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { useVideos, Event, Ruleset } from '../data/videos'
 import { VideoCard } from '../components/VideoCard'
 import { FilterBar } from '../components/FilterBar'
+
+const PER_PAGE = 8
 export function CatalogPage() {
   const { videos, loading } = useVideos()
   const [searchParams, setSearchParams] = useSearchParams()
@@ -18,6 +21,7 @@ export function CatalogPage() {
   const [sortBy, setSortBy] = useState<'newest' | 'rating'>(
     (searchParams.get('sort') as 'newest' | 'rating') || 'newest',
   )
+  const [page, setPage] = useState(1)
   // Update URL params when state changes
   useEffect(() => {
     const params = new URLSearchParams()
@@ -54,6 +58,14 @@ export function CatalogPage() {
         }
       })
   }, [videos, searchQuery, selectedEvent, selectedRuleset, sortBy])
+
+  // Reset to page 1 when filters change
+  useEffect(() => {
+    setPage(1)
+  }, [searchQuery, selectedEvent, selectedRuleset, sortBy])
+
+  const totalPages = Math.ceil(filteredAndSortedVideos.length / PER_PAGE)
+  const paginatedVideos = filteredAndSortedVideos.slice((page - 1) * PER_PAGE, page * PER_PAGE)
   return (
     <div className="min-h-screen bg-bjj-bg py-12">
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
@@ -105,6 +117,7 @@ export function CatalogPage() {
         {loading ? (
           <div className="text-center py-12 text-bjj-textMuted">Loading matches...</div>
         ) : filteredAndSortedVideos.length > 0 ? (
+          <>
           <motion.div
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"
             initial={{
@@ -117,7 +130,7 @@ export function CatalogPage() {
               duration: 0.5,
             }}
           >
-            {filteredAndSortedVideos.map((video, index) => (
+            {paginatedVideos.map((video, index) => (
               <motion.div
                 key={video.id}
                 initial={{
@@ -137,6 +150,40 @@ export function CatalogPage() {
               </motion.div>
             ))}
           </motion.div>
+
+          {/* Pagination */}
+          {totalPages > 1 && (
+            <div className="mt-10 flex items-center justify-center gap-2">
+              <button
+                onClick={() => { setPage((p) => Math.max(1, p - 1)); window.scrollTo(0, 0) }}
+                disabled={page === 1}
+                className="p-2 rounded-lg border border-bjj-border text-bjj-textMuted hover:text-white hover:border-bjj-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+              {Array.from({ length: totalPages }, (_, i) => i + 1).map((p) => (
+                <button
+                  key={p}
+                  onClick={() => { setPage(p); window.scrollTo(0, 0) }}
+                  className={`w-10 h-10 rounded-lg text-sm font-medium transition-colors ${
+                    p === page
+                      ? 'bg-bjj-accent text-bjj-bg'
+                      : 'border border-bjj-border text-bjj-textMuted hover:text-white hover:border-bjj-accent/50'
+                  }`}
+                >
+                  {p}
+                </button>
+              ))}
+              <button
+                onClick={() => { setPage((p) => Math.min(totalPages, p + 1)); window.scrollTo(0, 0) }}
+                disabled={page === totalPages}
+                className="p-2 rounded-lg border border-bjj-border text-bjj-textMuted hover:text-white hover:border-bjj-accent/50 disabled:opacity-30 disabled:cursor-not-allowed transition-colors"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
+            </div>
+          )}
+          </>
         ) : (
           <div className="py-20 text-center border border-bjj-border border-dashed rounded-xl bg-bjj-surface/50">
             <h3 className="font-heading text-2xl text-white mb-2">
