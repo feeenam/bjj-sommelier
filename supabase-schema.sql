@@ -43,3 +43,70 @@ create policy "Allow authenticated update"
   to authenticated
   using (true)
   with check (true);
+
+-- ============================================================
+-- Private Video Library
+-- ============================================================
+
+create table collections (
+  id uuid default gen_random_uuid() primary key,
+  name text not null,
+  description text not null default '',
+  created_at timestamptz default now()
+);
+
+alter table collections enable row level security;
+
+create policy "Authenticated full access on collections"
+  on collections for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create table tags (
+  id uuid default gen_random_uuid() primary key,
+  name text not null unique,
+  created_at timestamptz default now()
+);
+
+alter table tags enable row level security;
+
+create policy "Authenticated full access on tags"
+  on tags for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create table library_videos (
+  id uuid default gen_random_uuid() primary key,
+  title text not null,
+  source_url text not null,
+  youtube_id text,
+  thumbnail_url text not null default '',
+  description text not null default '',
+  notes text not null default '',
+  collection_id uuid references collections(id) on delete set null,
+  created_at timestamptz default now()
+);
+
+alter table library_videos enable row level security;
+
+create policy "Authenticated full access on library_videos"
+  on library_videos for all
+  to authenticated
+  using (true)
+  with check (true);
+
+create table library_video_tags (
+  video_id uuid references library_videos(id) on delete cascade,
+  tag_id uuid references tags(id) on delete cascade,
+  primary key (video_id, tag_id)
+);
+
+alter table library_video_tags enable row level security;
+
+create policy "Authenticated full access on library_video_tags"
+  on library_video_tags for all
+  to authenticated
+  using (true)
+  with check (true);

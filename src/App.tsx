@@ -9,6 +9,8 @@ import { AddVideoPage } from './pages/AddVideoPage'
 import { EditVideoPage } from './pages/EditVideoPage'
 import { InvitePage } from './pages/InvitePage'
 import { LoginPage } from './pages/LoginPage'
+import { LibraryPage } from './pages/LibraryPage'
+import { AddLibraryVideoPage } from './pages/AddLibraryVideoPage'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -33,6 +35,8 @@ export function App() {
               <Route path="/add" element={<ProtectedRoute><AddVideoPage /></ProtectedRoute>} />
               <Route path="/videos/:id/edit" element={<ProtectedRoute><EditVideoPage /></ProtectedRoute>} />
               <Route path="/invite" element={<ProtectedRoute><InvitePage /></ProtectedRoute>} />
+              <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
+              <Route path="/library/add" element={<ProtectedRoute><AddLibraryVideoPage /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />
