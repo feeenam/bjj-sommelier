@@ -157,6 +157,32 @@ export function useLibraryVideos() {
   return { videos, loading, error, refetch: fetch }
 }
 
+export function useLibraryVideo(id: string | undefined) {
+  const [video, setVideo] = useState<LibraryVideo | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (!id) { setLoading(false); return }
+    async function fetch() {
+      const { data, error } = await supabase
+        .from('library_videos')
+        .select('*, library_video_tags(tags(*))')
+        .eq('id', id)
+        .single()
+      if (error) {
+        setError(error.message)
+      } else {
+        setVideo(mapDbLibraryVideo(data as DbLibraryVideo))
+      }
+      setLoading(false)
+    }
+    fetch()
+  }, [id])
+
+  return { video, loading, error }
+}
+
 // ── CRUD ───────────────────────────────────────────────
 
 export async function createCollection(name: string, description = '') {
@@ -218,6 +244,39 @@ export async function createLibraryVideo(form: LibraryVideoFormData) {
   }
 
   return data
+}
+
+export async function updateLibraryVideo(id: string, form: LibraryVideoFormData) {
+  const { tag_ids, ...videoData } = form
+  const payload = {
+    ...videoData,
+    youtube_id: videoData.youtube_id || null,
+    collection_id: videoData.collection_id || null,
+  }
+
+  const { error } = await supabase
+    .from('library_videos')
+    .update(payload)
+    .eq('id', id)
+  if (error) throw error
+
+  // Replace tags: delete existing, insert new
+  const { error: delError } = await supabase
+    .from('library_video_tags')
+    .delete()
+    .eq('video_id', id)
+  if (delError) throw delError
+
+  if (tag_ids.length > 0) {
+    const junctionRows = tag_ids.map((tagId) => ({
+      video_id: id,
+      tag_id: tagId,
+    }))
+    const { error: tagError } = await supabase
+      .from('library_video_tags')
+      .insert(junctionRows)
+    if (tagError) throw tagError
+  }
 }
 
 export async function deleteLibraryVideo(id: string) {

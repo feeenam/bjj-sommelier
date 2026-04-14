@@ -11,6 +11,7 @@ import { InvitePage } from './pages/InvitePage'
 import { LoginPage } from './pages/LoginPage'
 import { LibraryPage } from './pages/LibraryPage'
 import { AddLibraryVideoPage } from './pages/AddLibraryVideoPage'
+import { EditLibraryVideoPage } from './pages/EditLibraryVideoPage'
 import { AuthProvider, useAuth } from './lib/AuthContext'
 
 function ProtectedRoute({ children }: { children: React.ReactNode }) {
@@ -37,6 +38,7 @@ export function App() {
               <Route path="/invite" element={<ProtectedRoute><InvitePage /></ProtectedRoute>} />
               <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
               <Route path="/library/add" element={<ProtectedRoute><AddLibraryVideoPage /></ProtectedRoute>} />
+              <Route path="/library/:id/edit" element={<ProtectedRoute><EditLibraryVideoPage /></ProtectedRoute>} />
             </Routes>
           </main>
           <Footer />
