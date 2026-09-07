@@ -110,3 +110,28 @@ create policy "Authenticated full access on library_video_tags"
   to authenticated
   using (true)
   with check (true);
+
+-- ============================================================
+-- Keepalive (dedicated writable row for the GitHub Action ping,
+-- so free-tier inactivity pause sees a real write, not just a read)
+-- ============================================================
+
+create table keepalive (
+  id int primary key default 1,
+  alive boolean not null default true,
+  pinged_at timestamptz not null default now(),
+  constraint keepalive_singleton check (id = 1)
+);
+
+insert into keepalive (id) values (1);
+
+alter table keepalive enable row level security;
+
+create policy "Allow anon read"
+  on keepalive for select
+  using (true);
+
+create policy "Allow anon update"
+  on keepalive for update
+  using (true)
+  with check (true);
