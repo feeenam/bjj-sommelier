@@ -8,7 +8,7 @@ import {
   parseJsonObject,
   sanitizeMarkdown,
   wrapUntrusted,
-} from './generate-article'
+} from '../api/generate-article'
 
 const allowedOf = (input: string) => extractAllowedUrls(input)
 

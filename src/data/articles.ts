@@ -92,6 +92,12 @@ export function useArticle(lookup: Lookup) {
   const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
+    // The editor route for a new article has no id: nothing to fetch.
+    if (('id' in lookup && !lookup.id) || ('slug' in lookup && !lookup.slug)) {
+      setArticle(null)
+      setLoading(false)
+      return
+    }
     let cancelled = false
     setLoading(true)
     const query = supabase.from('articles').select(FULL_COLUMNS)

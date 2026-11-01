@@ -293,7 +293,7 @@ export function ArticleEditorPage() {
   return (
     <div className="min-h-screen bg-bjj-bg py-12">
       <div className="mx-auto max-w-3xl px-4 sm:px-6 lg:px-8">
-        <h1 className="font-heading text-5xl text-white">{stage === 'input' ? 'WRITE AN ARTICLE' : 'EDIT DRAFT'}</h1>
+        <h1 className="font-heading text-5xl text-white">{stage === 'input' ? 'WRITE AN ARTICLE' : record?.status === 'published' ? 'EDIT ARTICLE' : 'EDIT DRAFT'}</h1>
         <p className="mt-2 text-bjj-textMuted">
           {stage === 'input'
             ? 'Dump everything you know about one technique: notes, details, links to images and videos. The AI cleans it up into an article using only what you wrote.'
