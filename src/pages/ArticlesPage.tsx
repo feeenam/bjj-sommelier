@@ -46,7 +46,7 @@ export function ArticlesPage() {
   const published = articles
     .filter((a) => a.status === 'published')
     .sort((a, b) => (b.publishedAt ?? '').localeCompare(a.publishedAt ?? ''))
-  const drafts = articles.filter((a) => a.status === 'draft' && a.userId === user?.id)
+  const drafts = articles.filter((a) => a.status === 'draft' && !!user && a.userId === user.id)
 
   return (
     <div className="min-h-screen bg-bjj-bg py-12">

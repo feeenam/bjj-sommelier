@@ -1,9 +1,6 @@
 import React, { useEffect, useRef } from 'react'
 import { EditorContent, useEditor } from '@tiptap/react'
-import StarterKit from '@tiptap/starter-kit'
-import Image from '@tiptap/extension-image'
-import Placeholder from '@tiptap/extension-placeholder'
-import { Markdown } from 'tiptap-markdown'
+import { createEditorExtensions } from '../lib/editor-extensions'
 import { Bold, Italic, Heading2, Heading3, List, ListOrdered, Quote, Link2, ImageIcon, Undo2, Redo2 } from 'lucide-react'
 
 interface Props {
@@ -37,14 +34,7 @@ export function RichTextEditor({ value, onChange, placeholder, minHeightClass = 
   const lastEmitted = useRef(value)
 
   const editor = useEditor({
-    extensions: [
-      StarterKit.configure({ heading: { levels: [2, 3] }, link: { openOnClick: false, autolink: true, HTMLAttributes: { rel: 'noopener noreferrer nofollow' } } }),
-      // Inline so images sit inside a paragraph: block images are serialized to Markdown without a
-      // trailing blank line, which glues the next paragraph's text onto the image.
-      Image.configure({ inline: true }),
-      Placeholder.configure({ placeholder: placeholder ?? 'Start writing…' }),
-      Markdown.configure({ html: false, linkify: true, breaks: false, transformPastedText: true }),
-    ],
+    extensions: createEditorExtensions(placeholder),
     content: value,
     editorProps: {
       attributes: {

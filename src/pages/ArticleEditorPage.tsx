@@ -34,7 +34,7 @@ const EMPTY: Fields = { notes: '', technique: '', title: '', excerpt: '', slug: 
 
 function fieldsFrom(article: Article): Fields {
   return {
-    notes: article.sourceMarkdown,
+    notes: article.sourceMarkdown ?? '',
     technique: article.technique,
     title: article.title,
     excerpt: article.excerpt,
@@ -59,7 +59,7 @@ export function ArticleEditorPage() {
   const { id } = useParams()
   const navigate = useNavigate()
   const isNew = !id
-  const { article, loading: loadingArticle, error: loadError } = useArticle({ id: id ?? '' })
+  const { article, loading: loadingArticle, error: loadError } = useArticle({ id: id ?? '' }, { withSource: true })
 
   const [fields, setFields] = useState<Fields>(EMPTY)
   const [saved, setSaved] = useState<Fields>(EMPTY) // what the database has
@@ -84,15 +84,19 @@ export function ArticleEditorPage() {
       return
     }
     if (!article) return
+    // Already holding this article (we just saved it as new and the route changed to its id): the
+    // state here is newer than the copy that was fetched, so keep it.
+    if (record?.id === article.id) return
     const loaded = fieldsFrom(article)
     setRecord(article)
     setFields(loaded)
     setSaved(loaded)
-    setGeneratedBody(loaded.body)
+    // Nothing here was generated in this session, so Regenerate asks before replacing the body.
+    setGeneratedBody('')
     setStage(loaded.body ? 'draft' : 'input')
     const found = readBackup(article.id)
     setBackup(found && !sameFields(found, loaded) ? found : null)
-  }, [isNew, article])
+  }, [isNew, article, record?.id])
 
   useEffect(() => {
     fetchGenerationsUsed().then(setUsed)
@@ -100,7 +104,7 @@ export function ArticleEditorPage() {
 
   // Local backup while there are unsaved changes, so a closed tab doesn't lose a long set of notes.
   useEffect(() => {
-    if (!dirty || backup) return
+    if (!dirty) return
     const timer = setTimeout(() => {
       try {
         localStorage.setItem(backupKey(record?.id), JSON.stringify(fields))
@@ -109,7 +113,7 @@ export function ArticleEditorPage() {
       }
     }, 500)
     return () => clearTimeout(timer)
-  }, [fields, dirty, backup, record?.id])
+  }, [fields, dirty, record?.id])
 
   useEffect(() => {
     if (!dirty) return
@@ -131,6 +135,7 @@ export function ArticleEditorPage() {
 
   function restoreBackup() {
     if (!backup) return
+    if (dirty && !window.confirm('Restoring will replace what you have typed since opening this page. Continue?')) return
     setFields(backup)
     setStage(backup.body ? 'draft' : 'input')
     setBackup(null)
@@ -177,27 +182,33 @@ export function ArticleEditorPage() {
 
   /** Saves the current fields. Returns the stored article, or null if saving failed. */
   const save = useCallback(async (): Promise<Article | null> => {
-    const title = fields.title.trim() || fields.technique.trim() || 'Untitled draft'
-    const slug = slugLocked ? fields.slug : slugify(fields.slug || title) || 'untitled-article'
+    const sent = fields
+    const title = sent.title.trim() || sent.technique.trim() || 'Untitled draft'
+    const slug = slugLocked ? sent.slug : slugify(sent.slug || title) || 'untitled-article'
     if (!slugLocked && !isValidSlug(slug)) {
-      setError('The slug can only use lowercase letters, numbers and single hyphens.')
+      setError('The slug can only use lowercase letters, numbers and single hyphens (and cannot be "new").')
       return null
     }
     const input = {
       title,
       slug,
-      excerpt: fields.excerpt.trim(),
-      technique: fields.technique.trim(),
-      sourceMarkdown: fields.notes,
-      bodyMarkdown: fields.body,
+      excerpt: sent.excerpt.trim(),
+      technique: sent.technique.trim(),
+      sourceMarkdown: sent.notes,
+      bodyMarkdown: sent.body,
     }
     const stored = record ? await updateArticle(record.id, input, !slugLocked) : await createArticle(input)
     const next = fieldsFrom(stored)
     clearBackup(record?.id)
     clearBackup(undefined)
     setRecord(stored)
-    setFields(next)
     setSaved(next)
+    // The editor stays editable while the request runs. If nothing changed meanwhile, show what was
+    // stored; otherwise keep what was typed since (it stays unsaved, so it is backed up and the page
+    // still warns before closing), adopting only a slug the server adjusted.
+    setFields((current) =>
+      current === sent ? next : { ...current, slug: current.slug === sent.slug ? next.slug : current.slug }
+    )
     return stored
   }, [fields, record, slugLocked])
 
@@ -267,10 +278,11 @@ export function ArticleEditorPage() {
     }
   }
 
-  if (!isNew && loadingArticle) {
+  if (!isNew && loadingArticle && !record) {
     return <div className="min-h-screen bg-bjj-bg py-12 text-center text-bjj-textMuted">Loading…</div>
   }
-  if (!isNew && (loadError || !article)) {
+  // Not found only when we hold nothing: right after the first save we have the article before the refetch lands.
+  if (!isNew && !record && (loadError || !article)) {
     return (
       <div className="min-h-screen bg-bjj-bg py-12">
         <div className="mx-auto max-w-3xl px-4">

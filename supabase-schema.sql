@@ -140,6 +140,10 @@ create policy "Allow anon update"
 -- Technique articles (LLM-assisted blog posts)
 -- Run this block in the Supabase SQL Editor. Also enable the pg_cron
 -- extension first (Dashboard > Database > Extensions) for the log prune job.
+--
+-- If you ran an earlier version of this block, reset it first (this deletes any articles):
+--   drop table if exists article_sources, articles, generation_log cascade;
+--   drop function if exists public.articles_before_write(), public.claim_generation(int), public.generations_used_today();
 -- ============================================================
 
 create table articles (
@@ -149,7 +153,6 @@ create table articles (
   slug text not null unique check (slug ~ '^[a-z0-9]+(-[a-z0-9]+)*$'),
   excerpt text not null default '',
   technique text not null default '',
-  source_markdown text not null default '',
   body_markdown text not null default '',
   status text not null default 'draft' check (status in ('draft', 'published')),
   published_at timestamptz,
@@ -174,17 +177,21 @@ create policy "Owner full access to articles"
   using (user_id = auth.uid())
   with check (user_id = auth.uid());
 
--- Keeps updated_at current, stamps published_at on first publish, and locks the slug after that
--- so shared links never break.
+-- Keeps updated_at current and stamps published_at on first publish. published_at is only ever set
+-- here: a client cannot choose it on insert or clear it later, so the slug lock below cannot be
+-- undone by "clear published_at, rename, republish".
 create or replace function public.articles_before_write() returns trigger
 language plpgsql as $$
 begin
   new.updated_at := now();
-  if tg_op = 'UPDATE' then
+  if tg_op = 'INSERT' then
+    new.published_at := null;
+  else
+    new.user_id := old.user_id;
+    new.published_at := old.published_at;
     if old.published_at is not null and new.slug is distinct from old.slug then
       raise exception 'slug is locked once an article has been published';
     end if;
-    new.user_id := old.user_id;
   end if;
   if new.status = 'published' and new.published_at is null then
     new.published_at := now();
@@ -195,6 +202,32 @@ end $$;
 create trigger articles_before_write
   before insert or update on articles
   for each row execute function public.articles_before_write();
+
+-- Anonymous visitors may read only the publishable columns of published articles: not the author's
+-- id, and never the raw notes (those live in article_sources, readable only by the owner).
+revoke all on articles from anon;
+grant select (id, title, slug, excerpt, technique, body_markdown, status, published_at, created_at, updated_at)
+  on articles to anon;
+
+-- The author's raw notes, kept apart from the article so publishing never exposes them.
+create table article_sources (
+  article_id uuid primary key references articles (id) on delete cascade,
+  user_id uuid not null default auth.uid() references auth.users (id) on delete cascade,
+  source_markdown text not null default '',
+  updated_at timestamptz not null default now()
+);
+
+alter table article_sources enable row level security;
+revoke all on article_sources from anon;
+
+create policy "Owner full access to article sources"
+  on article_sources for all
+  to authenticated
+  using (user_id = auth.uid())
+  with check (
+    user_id = auth.uid()
+    and exists (select 1 from articles a where a.id = article_id and a.user_id = auth.uid())
+  );
 
 -- Every generation request is logged here (failures included, since they still cost quota).
 -- No policies on purpose: only claim_generation() writes to it.

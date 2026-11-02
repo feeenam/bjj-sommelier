@@ -9,6 +9,7 @@ import {
   sanitizeMarkdown,
   wrapUntrusted,
 } from '../api/generate-article'
+import { htmlNodeCount } from './helpers/html-nodes'
 
 const allowedOf = (input: string) => extractAllowedUrls(input)
 
@@ -49,16 +50,17 @@ describe('sanitizeMarkdown', () => {
   it('is not fooled by an allowed URL used as a prefix of a different one', () => {
     expect(sanitizeMarkdown('[x](https://img.com/g.jpg.evil.com)', allowed)).toBe('x')
   })
-  it('strips raw HTML, comments and reference definitions', () => {
+  it('neutralizes raw HTML (shown as inert text), drops comments and unallowed reference definitions', () => {
     const md = 'Hi <script>alert(1)</script><b>there</b> <!-- hidden -->\n\n[1]: https://evil.com\n\nend'
     const out = sanitizeMarkdown(md, allowed)
-    expect(out).not.toMatch(/<|>/)
+    expect(htmlNodeCount(out)).toBe(0)
     expect(out).not.toContain('evil.com')
+    expect(out).not.toContain('hidden')
     expect(out).toContain('there')
     expect(out).toContain('end')
   })
-  it('unwraps autolinks and checks them against the allowlist', () => {
-    expect(sanitizeMarkdown('<https://evil.com> and <https://img.com/g.jpg>', allowed)).toBe('and https://img.com/g.jpg')
+  it('keeps an allowed autolink and removes a foreign one', () => {
+    expect(sanitizeMarkdown('<https://evil.com> and <https://img.com/g.jpg>', allowed)).toBe('and <https://img.com/g.jpg>')
   })
   it('keeps [TODO] markers', () => {
     expect(sanitizeMarkdown('Step 2 [TODO: what happens to the far arm?]', allowed)).toBe('Step 2 [TODO: what happens to the far arm?]')

@@ -20,7 +20,8 @@ export function ArticlePage() {
     }
   }, [article])
 
-  const isOwner = !!article && user?.id === article.userId
+  // Anonymous visitors get no author id back, so an owner needs both a session and a match.
+  const isOwner = !!user && !!article && user.id === article.userId
 
   return (
     <div className="min-h-screen bg-bjj-bg py-12">

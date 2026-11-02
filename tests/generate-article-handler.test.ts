@@ -165,11 +165,43 @@ describe('generate-article handler: model calls', () => {
     fetchMock.mockResolvedValueOnce(new Response('{}', { status: 429 }))
     expect((await run(makeReq())).statusCode).toBe(502)
   })
-  it('returns 502 for unparseable or empty model output', async () => {
-    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'not json' }] } }] }), { status: 200 }))
+  it('falls back to Groq when Gemini has a network failure (adversarial finding)', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('fetch failed')).mockResolvedValueOnce(groqOk(GOOD))
+    const res = await run(makeReq())
+    expect(res.statusCode).toBe(200)
+    expect(String(fetchMock.mock.calls[1][0])).toContain('api.groq.com')
+  })
+  it('falls back to Groq when Gemini returns nothing usable: safety-blocked, not JSON, or no title or body (adversarial finding)', async () => {
+    const blocked = () => new Response(JSON.stringify({ candidates: [{ finishReason: 'SAFETY' }] }), { status: 200 })
+    const notJson = () => new Response(JSON.stringify({ candidates: [{ content: { parts: [{ text: 'Sorry, I cannot help.' }] } }] }), { status: 200 })
+    const empty = () => geminiOk({ title: '', excerpt: '', slug: '', body_markdown: '' })
+    for (const bad of [blocked, notJson, empty]) {
+      fetchMock.mockReset()
+      fetchMock.mockResolvedValueOnce(bad()).mockResolvedValueOnce(groqOk(GOOD))
+      const res = await run(makeReq())
+      expect(res.statusCode).toBe(200)
+      expect(res.body.title).toBe('Knee Cut Pass')
+      expect(fetchMock).toHaveBeenCalledTimes(2)
+    }
+  })
+  it('spends one unit of quota per request even when it falls back', async () => {
+    fetchMock.mockRejectedValueOnce(new TypeError('fetch failed')).mockResolvedValueOnce(groqOk(GOOD))
+    await run(makeReq())
+    expect(supabase.rpcCalls.filter(([n]) => n === 'claim_generation')).toHaveLength(1)
+  })
+  it('returns 502 when both providers return nothing usable, or Groq itself fails', async () => {
+    const unusable = () => geminiOk({ title: '', excerpt: '', slug: '', body_markdown: '' })
+    fetchMock.mockResolvedValueOnce(unusable()).mockResolvedValueOnce(groqOk({ title: '', excerpt: '', slug: '', body_markdown: '' }))
     expect((await run(makeReq())).statusCode).toBe(502)
-    fetchMock.mockResolvedValueOnce(geminiOk({ title: '', excerpt: '', slug: '', body_markdown: '' }))
+    fetchMock.mockReset()
+    fetchMock.mockResolvedValueOnce(unusable()).mockRejectedValueOnce(new TypeError('fetch failed'))
     expect((await run(makeReq())).statusCode).toBe(502)
+  })
+  it('returns 502, not a crash, when Gemini returns nothing usable and there is no Groq key', async () => {
+    delete process.env.GROQ_API_KEY
+    fetchMock.mockResolvedValueOnce(new Response(JSON.stringify({ candidates: [{ finishReason: 'SAFETY' }] }), { status: 200 }))
+    expect((await run(makeReq())).statusCode).toBe(502)
+    expect(fetchMock).toHaveBeenCalledTimes(1)
   })
   it('sanitizes a prompt-injected model answer: invented links, HTML and non-allowlisted images', async () => {
     fetchMock.mockResolvedValueOnce(
@@ -185,7 +217,8 @@ describe('generate-article handler: model calls', () => {
     expect(res.statusCode).toBe(200)
     const out = JSON.stringify(res.body)
     expect(out).not.toContain('evil.com')
-    expect(out).not.toContain('<')
+    expect(out).not.toContain('<script')
+    expect(res.body.body_markdown).not.toMatch(/(^|[^\\])<img/)
     expect(res.body.slug).toBe('knee-cut')
     expect(res.body.body_markdown).toContain('https://youtu.be/dQw4w9WgXcQ?t=30')
     expect(res.body.body_markdown).toContain('Click here')
