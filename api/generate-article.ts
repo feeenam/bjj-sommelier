@@ -301,6 +301,7 @@ Rules:
 - Keep the author's voice: first person where they use it, practitioner-to-practitioner, clear and direct, no hype.
 - Structure freely. Use headings only where the material supports them. Order it so a reader can follow the technique.
 - Every link and image URL in the notes must appear exactly as given, placed where it fits (an image next to the step it shows, a video link next to what it demonstrates). Never invent, alter or add a URL.
+- Every YouTube link must be its own paragraph, written as a Markdown link whose text is a short caption: [caption](url). Take the caption from what the author wrote about that clip (for example their parenthetical after the link, or the sentence introducing it): name who is shown and what the clip demonstrates. The site turns that line into a thumbnail with the caption underneath. If the notes say nothing about a clip, use a neutral caption such as "Video" and add a [TODO: what this clip shows]. Never remove a link or merge two links into one paragraph.
 - If a technique name is provided, make it the focus and use it in the title.
 - Write Markdown only, no HTML.
 - Answer with the required JSON only: title, excerpt (1-2 sentences), slug (lowercase, hyphenated), body_markdown.`

@@ -39,7 +39,12 @@ export function parseYoutube(href: string): YoutubeRef | null {
   return { id, start: parseStartTime(url.searchParams.get('t') ?? url.searchParams.get('start')) }
 }
 
-export function youtubeEmbedUrl(ref: YoutubeRef): string {
-  const query = ref.start > 0 ? `?start=${ref.start}` : ''
-  return `https://www.youtube-nocookie.com/embed/${ref.id}${query}`
+export function youtubeEmbedUrl(ref: YoutubeRef, autoplay = false): string {
+  const params = [ref.start > 0 ? `start=${ref.start}` : '', autoplay ? 'autoplay=1' : ''].filter(Boolean).join('&')
+  return `https://www.youtube-nocookie.com/embed/${ref.id}${params ? `?${params}` : ''}`
+}
+
+/** The video's still frame. The id is validated by parseYoutube, so it is safe to put in a URL. */
+export function youtubeThumbnailUrl(ref: YoutubeRef): string {
+  return `https://i.ytimg.com/vi/${ref.id}/hqdefault.jpg`
 }
