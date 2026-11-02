@@ -30,6 +30,7 @@ function expectOnlyAuthorUrls(modelBody: string) {
   const { article, html } = render(modelBody)
   for (const target of targets(html)) {
     if (/^https:\/\/www\.youtube-nocookie\.com\/embed\/abc12345678/.test(target)) continue // the player for the author's own YouTube link
+    if (target === 'https://i.ytimg.com/vi/abc12345678/hqdefault.jpg') continue // its thumbnail, derived from the id only
     let canonical = target
     try {
       canonical = new URL(target).href
