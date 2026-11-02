@@ -11,6 +11,7 @@ export function Header() {
   const navLinks = [
     { name: 'Home', path: '/' },
     { name: 'Catalog', path: '/videos' },
+    { name: 'Articles', path: '/articles' },
     ...(user ? [{ name: 'Library', path: '/library' }, { name: 'Add Match', path: '/add' }, { name: 'Invite', path: '/invite' }] : []),
   ]
 

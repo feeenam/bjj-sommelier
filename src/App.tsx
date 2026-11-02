@@ -1,4 +1,4 @@
-import React from 'react'
+import React, { Suspense, lazy } from 'react'
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom'
 import { Header } from './components/Header'
 import { Footer } from './components/Footer'
@@ -10,6 +10,9 @@ import { EditVideoPage } from './pages/EditVideoPage'
 import { InvitePage } from './pages/InvitePage'
 import { LoginPage } from './pages/LoginPage'
 import { LibraryPage } from './pages/LibraryPage'
+import { ArticlesPage } from './pages/ArticlesPage'
+import { ArticlePage } from './pages/ArticlePage'
+const ArticleEditorPage = lazy(() => import('./pages/ArticleEditorPage').then((m) => ({ default: m.ArticleEditorPage })))
 import { AddLibraryVideoPage } from './pages/AddLibraryVideoPage'
 import { EditLibraryVideoPage } from './pages/EditLibraryVideoPage'
 import { AuthProvider, useAuth } from './lib/AuthContext'
@@ -39,6 +42,10 @@ export function App() {
               <Route path="/library" element={<ProtectedRoute><LibraryPage /></ProtectedRoute>} />
               <Route path="/library/add" element={<ProtectedRoute><AddLibraryVideoPage /></ProtectedRoute>} />
               <Route path="/library/:id/edit" element={<ProtectedRoute><EditLibraryVideoPage /></ProtectedRoute>} />
+              <Route path="/articles" element={<ArticlesPage />} />
+              <Route path="/articles/new" element={<ProtectedRoute><Suspense fallback={<div className="py-12 text-center text-bjj-textMuted">Loading…</div>}><ArticleEditorPage /></Suspense></ProtectedRoute>} />
+              <Route path="/articles/:id/edit" element={<ProtectedRoute><Suspense fallback={<div className="py-12 text-center text-bjj-textMuted">Loading…</div>}><ArticleEditorPage /></Suspense></ProtectedRoute>} />
+              <Route path="/articles/:slug" element={<ArticlePage />} />
             </Routes>
           </main>
           <Footer />
